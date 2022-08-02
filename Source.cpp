@@ -24,8 +24,7 @@ void enciph(char *textFile, char *keyFile)
 
     char textCh, keyCh, outCh;
     while(!feof(text))
-    {
-        
+    {   
         textCh = fgetc(text);
         keyCh = fgetc(key);
         if(!feof(text))
