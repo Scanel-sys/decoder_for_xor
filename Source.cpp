@@ -1,32 +1,35 @@
+#include <locale.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <iostream>
 
 using namespace std;
 
-void enciph(char *textFile, char *keyFile);
+void enciph(FILE * text, FILE * outFl, FILE * key);
+
+FILE * getCiphedText();
 
 int main()
 {
-    char textFile[] = "kursovaya/input.txt";
-    char keyFile[] =  "kursovaya/key.txt";
-    enciph(textFile, keyFile);
+    setlocale(LC_ALL, "ru_Ru");
 
+    FILE * outFl = getCiphedText();
+
+    
+
+
+    fclose(outFl);
     return 0;
 }
 
-void enciph(char *textFile, char *keyFile)
+void enciph(FILE * text, FILE * outFl, FILE * key)
 {
-    FILE *text;
-    FILE *key;
-    FILE *output;
-    text = fopen(textFile, "r");
-    key = fopen(keyFile, "r");
-    output = fopen("kursovaya/output.txt", "w");
-
-    char textCh, keyCh, outCh;
+    wchar_t textCh, keyCh, outCh;
     while(!feof(text))
-    {   
-        textCh = fgetc(text);
-        keyCh = fgetc(key);
+    {      
+        textCh = getwc(text);
+        keyCh = getwc(key);
         if(!feof(text))
         {
             if(feof(key))
@@ -35,11 +38,27 @@ void enciph(char *textFile, char *keyFile)
                 keyCh = fgetc(key);
             }
             outCh = textCh ^ keyCh;
-            fputc(outCh, output);
+            fwprintf(outFl, L"%lc", outCh);
         }
     }
+}
+
+FILE * getCiphedText()
+{
+    char textFile[] = "kursovaya/input.txt";
+    char keyFile[] =  "kursovaya/key.txt";
+
+    FILE *text;
+    FILE *key;
+    FILE *outFl;
+    text = fopen(textFile, "r");
+    key = fopen(keyFile, "r");
+    outFl = fopen("kursovaya/output.txt", "w");
+
+    enciph(text, outFl, key);
 
     fclose(text);
     fclose(key);
-    fclose(output);
+
+    return outFl;
 }
