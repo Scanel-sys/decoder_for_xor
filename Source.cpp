@@ -17,7 +17,7 @@ struct match
 };
 
 void ciph(FILE * text, FILE * key, FILE * outFl);
-void deCiph(FILE * text, FILE * outFl);
+void deCiphKey(FILE * text, FILE * outFl);
 wchar_t freqSymb(wchar_t symbs[], unsInt offset, unsInt realTextSize);
 match * findKLen(wchar_t *text, unsInt realTexSize);
 void matchSort(match *matches, unsInt realTextSize, int flag);
@@ -56,7 +56,7 @@ void ciph(FILE * text, FILE * key, FILE * fout)
     }
 }
 
-void deCiph(FILE * fin, FILE * fout)
+void deCiphKey(FILE * fin, FILE * fout)
 {   
     wchar_t text[textSize];
     unsInt i = 0;
@@ -110,7 +110,10 @@ void deCiph(FILE * fin, FILE * fout)
         {
             //making lettGroup array empty
             int lett_in_group = realTextSize / offset;
-            wchar_t lettGroup[offset][lett_in_group];
+            wchar_t ** lettGroup = (wchar_t **)malloc(sizeof(wchar_t *) * offset);
+            for(int j = 0; j < offset; j++)
+                lettGroup[j] = (wchar_t *)malloc(sizeof(wchar_t)*lett_in_group);
+
             for(unsInt z = 0; z < offset; z++)
                 for(unsInt j = 0; j < lett_in_group; j++)   
                     lettGroup[z][j] = L'\0';
@@ -135,16 +138,15 @@ void deCiph(FILE * fin, FILE * fout)
                 wprintf(L"%lc", key[j]);
             }   
             wprintf(L"\n");
+            // for(int i = 0; i < offset; i++)
+            //     for(int j = 0; j < lett_in_group; j++)
+            //         free(lettGroup[i]);
+            free(lettGroup);
         }
         else if(usrCh == 3)
         {
-            printf("\nwrite down the key?\n1 | yes\n2 | no\n");
-            usrCh = 0;
-            scanf("%d", &usrCh);
-            if(usrCh == 1)
-                for(int j = 0; j < offset; j++)
-                    fwprintf(fout,  L"%lc", key[j]);   
-            
+            for(int j = 0; j < offset; j++)
+                fwprintf(fout,  L"%lc", key[j]);      
             usrCh = 3;
         }
         else
@@ -464,9 +466,9 @@ void usrMenu(char basic_textFlName[], char basic_ciphedFlName[], char basic_keyF
                 scanf("%s", outFl);
                 key = fopen(keyFl, "w");
             }
-            deCiph(text, fout);
+            deCiphKey(text, key);
             fclose(text);
-            fclose(fout);
+            fclose(key);
             printf("\n----------------------------------------------------------------\n");
             printf("                        wrote the key successfully");
             printf("\n----------------------------------------------------------------\n");
