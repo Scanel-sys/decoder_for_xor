@@ -71,7 +71,7 @@ void deCiphKey(FILE * fin, FILE * fout)
     int usrCh = 0;
     int exitVal = 3;
     bool flag;
-    wchar_t key[realTextSize];
+    wchar_t * key = (wchar_t *)malloc(sizeof(wchar_t) * realTextSize);
     while(usrCh != exitVal)
     {
         wprintf(L"_________________________________________________________________");        
@@ -157,13 +157,14 @@ void deCiphKey(FILE * fin, FILE * fout)
         }
     }
     free(offsets);
+    free(key);
 }
 
 wchar_t freqSymb(wchar_t symbs[], unsInt offset, unsInt realTextSize)
 {
-    int lett_in_group = realTextSize/offset;
+    int lett_in_group = realTextSize / offset;
     wchar_t output, temp;
-    wchar_t uniqLett[lett_in_group];
+    wchar_t * uniqLett = (wchar_t *)malloc(sizeof(wchar_t) * lett_in_group);
     for(unsInt i = 0; i < lett_in_group; i++)
     {
         uniqLett[i] = L'\0';
@@ -204,6 +205,7 @@ wchar_t freqSymb(wchar_t symbs[], unsInt offset, unsInt realTextSize)
             output = temp;
         }
     }
+    free(uniqLett);
     return output;
 }
 
@@ -212,7 +214,7 @@ match * findKLen(wchar_t *text, unsInt realTextSize)
     unsInt offset = 0;
     unsInt cnt;
     unsInt i;
-    match matches[realTextSize];
+    match * matches = (match *)malloc(sizeof(match) * realTextSize);
     //gettin potential matches
     for(i = 0; i < realTextSize - 1; i++)
     {
@@ -231,7 +233,7 @@ match * findKLen(wchar_t *text, unsInt realTextSize)
     matchSort(matches, realTextSize, 1);
     bool flag = true;
     i = 0;
-    match pot_offs_rep[realTextSize];
+    match *pot_offs_rep = (match *)malloc(sizeof(match) * realTextSize);
     double prev_prc = 0;
     for(int j = 0; j < realTextSize && flag; j++)
     {
@@ -269,6 +271,8 @@ match * findKLen(wchar_t *text, unsInt realTextSize)
         }
     }
     matchSort(pot_offs, cnt, 1);
+    free(matches);
+    free(pot_offs_rep);
     return pot_offs;
 }
 
@@ -439,7 +443,7 @@ void usrMenu(char basic_textFlName[], char basic_ciphedFlName[], char basic_keyF
         case 3:
             printf("there are basic file names\n");
             printf("%s - basic ciphed text file name\n", basic_ciphedFlName);
-            printf("%s - basic key file name\n", basic_outKeyFlName);
+            printf("%s - basic output key file name\n", basic_outKeyFlName);
             printf("wanna use them?\n");
             
             printf("1 | yes\n2 | no\n");
