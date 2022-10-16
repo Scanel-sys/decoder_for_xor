@@ -66,47 +66,20 @@ void deCiphKey(FILE * fin, FILE * fout)
     unsInt realTextSize = i;
 
     //getting potential keylens
-    match * offsets = findKLen(text, realTextSize);
-    int offset = -1;
+    match * mtch = findKLen(text, realTextSize);
+    int offset = mtch->offset;
     int usrCh = 0;
-    int exitVal = 3;
+    int exitVal = 2;
     bool flag;
     wchar_t * key = (wchar_t *)malloc(sizeof(wchar_t) * realTextSize);
     while(usrCh != exitVal)
     {
         wprintf(L"_________________________________________________________________");        
-        wprintf(L"\n1 | choose offset");
-        if(offset != -1)
-        {
-            wprintf(L"\n2 | try to deciph the key and print it (chosen offset : %d, text size : %d)", offset, realTextSize);
-        }
-        wprintf(L"\n3 | save deciphed key and exit\n");
+        wprintf(L"\n1 | try to deciph the key and print it (chosen offset : %d, text size : %d)", offset, realTextSize);
+        
+        wprintf(L"\n2 | save deciphed key and exit\n");
         wscanf(L"%d", &usrCh);
-        if(usrCh == 1)
-        {
-            flag = true;
-            while(flag == true)
-            {
-                wprintf(L"_________________________________________________________________\n");        
-                wprintf(L"text size : %d\n", realTextSize);
-                flag = false;
-                wprintf(L"the offset should be chosen\n");
-                i = 0;
-                while(offsets[i].offset > 0)
-                {
-                    wprintf(L"%d | offset : %d  | prc : %f\n", i, offsets[i].offset, offsets[i].prc);
-                    i++;
-                }
-                wprintf(L"choose offsets : ");
-                wscanf(L"%d", &usrCh);
-                if(usrCh > -1 && usrCh < i)
-                    offset = offsets[usrCh].offset;
-                else
-                    flag = true;
-            }
-            usrCh = 0;
-        }
-        else if(offset != -1 && usrCh == 2)
+        if(mtch != NULL && usrCh == 1)
         {
             //making lettGroup array empty
             int lett_in_group = realTextSize / offset;
@@ -121,11 +94,12 @@ void deCiphKey(FILE * fin, FILE * fout)
             //dividing letter by OFFSET lett_in_group and XORing with ' ' space symbol
             for(unsInt j = 0; j < offset; j++)
             {
+                unsInt e = 0;
                 for(unsInt l = j; l < realTextSize; l += offset)
                 {
                     wchar_t tempLetter = text[l];
-                    unsInt e = 0;
-                    while(lettGroup[j][e] != tempLetter && lettGroup[j][e] != L'\0')
+                    //while(lettGroup[j][e] != tempLetter && lettGroup[j][e] != L'\0')
+                    while(lettGroup[j][e] != L'\0')
                         e++;        
                     
                     if(e < lett_in_group && lettGroup[j][e] == L'\0')
@@ -138,16 +112,12 @@ void deCiphKey(FILE * fin, FILE * fout)
                 wprintf(L"%lc", key[j]);
             }   
             wprintf(L"\n");
-            // for(int i = 0; i < offset; i++)
-            //     for(int j = 0; j < lett_in_group; j++)
-            //         free(lettGroup[i]);
             free(lettGroup);
         }
-        else if(usrCh == 3)
+        else if(usrCh == exitVal)
         {
             for(int j = 0; j < offset; j++)
                 fwprintf(fout,  L"%lc", key[j]);      
-            usrCh = 3;
         }
         else
         {
@@ -156,7 +126,7 @@ void deCiphKey(FILE * fin, FILE * fout)
             wprintf(L"##################################\n");
         }
     }
-    free(offsets);
+    free(mtch);
     free(key);
 }
 
@@ -209,7 +179,7 @@ wchar_t freqSymb(wchar_t symbs[], unsInt offset, unsInt realTextSize)
     return output;
 }
 
-match * findKLen(wchar_t *text, unsInt realTextSize)
+match * findKLen(wchar_t * text, unsInt realTextSize)
 {
     unsInt offset = 0;
     unsInt cnt;
@@ -271,12 +241,24 @@ match * findKLen(wchar_t *text, unsInt realTextSize)
         }
     }
     matchSort(pot_offs, cnt, 1);
+    match * output = (match *)malloc(sizeof(match));
+    output->offset = pot_offs[0].offset;
+    output->prc = pot_offs[0].prc;
+    for(unsInt z = 1; z < cnt; z++)
+    {
+        if(output->offset > pot_offs[z].offset)
+        {
+            output->offset = pot_offs[z].offset;
+            output->prc = pot_offs[z].prc;
+        }
+    }
     free(matches);
     free(pot_offs_rep);
-    return pot_offs;
+    free(pot_offs);
+    return output;
 }
 
-void matchSort(match *matches, unsInt realTextSize, int flag)
+void matchSort(match * matches, unsInt realTextSize, int flag)
 {
     //sorting by : 0 - offset | 1 - prc
     unsInt t;
